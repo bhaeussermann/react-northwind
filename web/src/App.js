@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import './App.css';
-import Spinner from './Common.js';
+import Common from './Common.js';
 
 const SortDirection = Object.freeze({ up: 0, down: 1});
 
 class App extends Component {
-
   state = {
     loading: true,
+    loadingError: null,
     sortedColumn: 'lastName',
     sortDirection: SortDirection.up,
     employees: []
@@ -17,10 +17,15 @@ class App extends Component {
     super();
     const self = this;
     document.addEventListener('DOMContentLoaded', function() {
-      fetch('/northwind/employees')
-      .then(response => response.json())
-      .then(employees => self.setState({ loading: false, employees: employees }))
-      .catch(error => console.error(error));
+      const controller = new AbortController();
+      Common.timeout(fetch('/northwind/employees', { signal: controller.signal }), 5000)
+        .then(response => response.json())
+        .then(employees => self.setState({ loading: false, employees: employees }))
+        .catch(error => {
+          controller.abort();
+          console.error(error);
+          self.setState({ loading: false, loadingError: error });
+        });
     }, false);
   }
 
@@ -59,28 +64,30 @@ class App extends Component {
       <div>
         <h1>Employees</h1>
         {this.state.loading 
-          ? (<Spinner />) 
-          : (
-            <table className="table">
-              <thead>
-                <tr>
-                  <th className={this.getColumnClasses('lastName')} onClick={() => this.toggleSortedColumn('lastName')}>Last Name</th>
-                  <th className={this.getColumnClasses('firstName')} onClick={() => this.toggleSortedColumn('firstName')}>FirstName</th>
-                  <th className={this.getColumnClasses('title')} onClick={() => this.toggleSortedColumn('title')}>Title</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {this.getSortedEmployees().map(e => (
-                  <tr key={e.id}>
-                    <td>{e.lastName}</td>
-                    <td>{e.firstName}</td>
-                    <td>{e.title}</td>
+          ? (<Common.Spinner />) 
+          : this.state.loadingError
+            ? (<h5>Error retrieving employees: {this.state.loadingError.message}</h5>)
+            : (
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th className={this.getColumnClasses('lastName')} onClick={() => this.toggleSortedColumn('lastName')}>Last Name</th>
+                    <th className={this.getColumnClasses('firstName')} onClick={() => this.toggleSortedColumn('firstName')}>FirstName</th>
+                    <th className={this.getColumnClasses('title')} onClick={() => this.toggleSortedColumn('title')}>Title</th>
+                    <th></th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          )
+                </thead>
+                <tbody>
+                  {this.getSortedEmployees().map(e => (
+                    <tr key={e.id}>
+                      <td>{e.lastName}</td>
+                      <td>{e.firstName}</td>
+                      <td>{e.title}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )
         }
       </div>
     );
