@@ -1,0 +1,35 @@
+.search {
+  margin: 8px 0;
+  border-radius: 0.7rem;
+  float: right;
+  width: 350px;
+}
+
+.sortable {
+  cursor: pointer;
+}
+
+.sortable::after {
+  content: '';
+  width: 9px;
+  margin-left: 5px;
+  display: inline-block;
+  padding: 3px;
+}
+
+.sort-arrow::after {
+  border: solid black;
+  border-width: 0 3px 3px 0;
+}
+
+.up::after {
+  margin-top: 3px;
+  transform: rotate(-135deg);
+  -webkit-transform: rotate(-135deg);
+}
+
+.down::after {
+  margin-bottom: 3px;
+  transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+}
