@@ -2,6 +2,57 @@ import React, { Component } from 'react';
 import './Employees.css';
 import Common from './Common.js';
 
+class EmployeeRow extends Component {
+  state = {
+    isBusy: false,
+    errorMessage: null
+  };
+
+  constructor(props) {
+    super();
+    this.state.employee = props.employee;
+    this.state.loadEmployees = props.loadEmployees;
+  }
+
+  async confirmDelete() {
+    if (window.confirm(`Delete ${this.state.employee.firstName} ${this.state.employee.lastName}?`)) {
+      try {
+        this.setState({ isBusy: true, errorMessage: null });
+        await Common.resolveResponse(fetch('/northwind/employees/' + this.state.employee.id, { method: 'delete' }));
+      }
+      catch (error) {
+        console.error(error);
+        this.setState({ errorMessage: 'Error deleting employee: ' + error.message });
+        throw error;
+      }
+      finally {
+        this.setState({ isBusy: false });
+      }
+
+      await this.state.loadEmployees();
+    }
+  }
+
+  render() {
+    return (
+      <tr>
+        <td>{this.state.employee.lastName}</td>
+        <td>{this.state.employee.firstName}</td>
+        <td>{this.state.employee.title}</td>
+        <td>
+          <button className="btn btn-link" onClick={() => this.confirmDelete()}>Delete</button>
+          {this.state.isBusy && (<Common.Spinner inline={true} />)}
+          {this.state.errorMessage && 
+            (<span className="icon-tooltip fa fa-lg fa-exclamation-circle">
+              <span className="icon-tooltip-text">{this.state.errorMessage}</span>
+            </span>)}
+        </td>
+      </tr>
+    );
+  }
+}
+
+
 const SortDirection = Object.freeze({ up: 0, down: 1});
 
 class Employees extends Component {
@@ -19,12 +70,15 @@ class Employees extends Component {
   };
 
   async loadEmployees() {
-    this.setState({ isBusy: true, errorMessage: null, employees: null });
+    this.setState({ isBusy: true, errorMessage: null });
     const controller = new AbortController();
     try {
-      const response = await Common.timeout(fetch('/northwind/employees', { signal: controller.signal }), 5000);
-      const employees = await response.json();
-      this.setState({ isBusy: false, employees: employees, filteredEmployees: employees });
+      const employees = 
+        await Common.timeout(
+          Common.parseResponseAsJson(
+            fetch('/northwind/employees', { signal: controller.signal })
+          ), 5000);
+      this.setState({ isBusy: false, employees, filteredEmployees: employees });
     }
     catch (error) {
         controller.abort();
@@ -74,22 +128,6 @@ class Employees extends Component {
         || e.title.toLowerCase().indexOf(searchFilter) !== -1);
     this.setState({ filteredEmployees: filteredEmployees });
   }
-
-  async confirmDelete(employee) {
-    if (window.confirm(`Delete ${employee.firstName} ${employee.lastName}?`)) {
-      try {
-        this.setState({ isBusy: true, errorMessage: null });
-        await fetch('/northwind/employees/' + employee.id, { method: 'delete' });
-      }
-      catch (error) {
-        console.error(error);
-        this.setState({ isBusy: false, errorMessage: 'Error deleting employee: ' + error.message });
-        throw error;
-      }
-
-      await this.loadEmployees();
-    }
-  }
   
   render() {
     return (
@@ -97,10 +135,10 @@ class Employees extends Component {
         <h1>Employees
           <input className="form-control search" placeholder="Search" type="text" onChange={e => this.searchFilterChanged(e)}></input>
         </h1>
-        {this.state.isBusy ? (<Common.Spinner />) : ''}
-        {this.state.errorMessage ? (<h5>{this.state.errorMessage}</h5>) : ''}
-        {!this.state.employees ? ''
-          : (
+        {this.state.isBusy && (<Common.Spinner />)}
+        {this.state.errorMessage && (<h5>{this.state.errorMessage}</h5>)}
+        {this.state.employees &&
+          (
             <table className="table">
               <thead>
                 <tr>
@@ -111,14 +149,7 @@ class Employees extends Component {
                 </tr>
               </thead>
               <tbody>
-                {this.getSortedEmployees().map(e => (
-                  <tr key={e.id}>
-                    <td>{e.lastName}</td>
-                    <td>{e.firstName}</td>
-                    <td>{e.title}</td>
-                    <td><button className="btn btn-link" onClick={() => this.confirmDelete(e)}>Delete</button></td>
-                  </tr>
-                ))}
+                {this.getSortedEmployees().map(e => (<EmployeeRow key={e.id} employee={e} loadEmployees={() => this.loadEmployees()} />))}
               </tbody>
             </table>
           )

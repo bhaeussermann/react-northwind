@@ -1,8 +1,9 @@
 import React from 'react';
 import './Common.css';
+import '../node_modules/font-awesome/css/font-awesome.min.css';
 
 const Spinner = props => {
-  return (<div className="spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>);
+  return (<div className={'spinner' + (props.inline ? ' inline-spinner' : '')}><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>);
 }
 
 const timeout = (promise, timeoutDuration) => {
@@ -15,9 +16,24 @@ const timeout = (promise, timeoutDuration) => {
   });
 }
 
+const resolveResponse = async responsePromise => {
+  const response = await responsePromise;
+  if (response.status >= 400)
+    throw Error(response.statusText);
+
+  return response;
+}
+
+const parseResponseAsJson = async responsePromise => {
+  const response = await resolveResponse(responsePromise);
+  return await response.json();
+}
+
 const Common = {
-  Spinner: Spinner,
-  timeout: timeout
+  Spinner,
+  timeout,
+  resolveResponse,
+  parseResponseAsJson
 };
 
 export default Common;
