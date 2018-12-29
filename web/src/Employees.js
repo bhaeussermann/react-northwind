@@ -10,14 +10,15 @@ class Employees extends Component {
     loadingError: null,
     sortedColumn: 'lastName',
     sortDirection: SortDirection.up,
-    employees: []
+    employees: [],
+    filteredEmployees: []
   };
 
   componentDidMount() {
     const controller = new AbortController();
     Common.timeout(fetch('/northwind/employees', { signal: controller.signal }), 5000)
       .then(response => response.json())
-      .then(employees => this.setState({ loading: false, employees: employees }))
+      .then(employees => this.setState({ loading: false, employees: employees, filteredEmployees: employees }))
       .catch(error => {
         controller.abort();
         console.error(error);
@@ -45,7 +46,7 @@ class Employees extends Component {
   }
 
   getSortedEmployees() {
-    return this.state.employees.sort((a, b) => {
+    return this.state.filteredEmployees.sort((a, b) => {
       const aValue = a[this.state.sortedColumn], bValue = b[this.state.sortedColumn];
       if (aValue === bValue)
         return 0;
@@ -55,11 +56,22 @@ class Employees extends Component {
     });
   }
 
+  searchFilterChanged(event) {
+    const searchFilter = event.target.value.toLowerCase();
+    const filteredEmployees = !searchFilter.length
+      ? this.state.employees
+      : this.state.employees.filter(e => 
+        e.firstName.toLowerCase().indexOf(searchFilter) !== -1
+        || e.lastName.toLowerCase().indexOf(searchFilter) !== -1
+        || e.title.toLowerCase().indexOf(searchFilter) !== -1);
+    this.setState({ filteredEmployees: filteredEmployees });
+  }
+    
   render() {
     return (
       <div>
         <h1>Employees
-          <input className="form-control search" placeholder="Search" type="text"></input>
+          <input className="form-control search" placeholder="Search" type="text" onChange={e => this.searchFilterChanged(e)}></input>
         </h1>
         {this.state.loading 
           ? (<Common.Spinner />) 

@@ -8,7 +8,7 @@ class App extends Component {
     return (
     <BrowserRouter>
       <Switch>
-        <Route path={["/", "/employees"]} exact={true} component={Employees} />
+        <Route path={['/', '/employees']} exact={true} component={Employees} />
         <Route path="/" render={props => (<h5>Path not found: {props.location.pathname}</h5>)} />
       </Switch>
     </BrowserRouter>
