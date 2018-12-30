@@ -21,7 +21,6 @@ class EmployeeRow extends Component {
         await Common.resolveResponse(fetch('/northwind/employees/' + this.state.employee.id, { method: 'delete' }));
       }
       catch (error) {
-        console.error(error);
         this.setState({ errorMessage: 'Error deleting employee: ' + error.message });
         throw error;
       }
@@ -82,7 +81,6 @@ class Employees extends Component {
     }
     catch (error) {
         controller.abort();
-        console.error(error);
         this.setState({ isBusy: false, errorMessage: 'Error retrieving employees: ' + error.message });
         throw error;
     }
@@ -139,19 +137,22 @@ class Employees extends Component {
         {this.state.errorMessage && (<h5>{this.state.errorMessage}</h5>)}
         {this.state.employees &&
           (
-            <table className="table">
-              <thead>
-                <tr>
-                  <th className={this.getColumnClasses('lastName')} onClick={() => this.toggleSortedColumn('lastName')}>Last Name</th>
-                  <th className={this.getColumnClasses('firstName')} onClick={() => this.toggleSortedColumn('firstName')}>First Name</th>
-                  <th className={this.getColumnClasses('title')} onClick={() => this.toggleSortedColumn('title')}>Title</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {this.getSortedEmployees().map(e => (<EmployeeRow key={e.id} employee={e} loadEmployees={() => this.loadEmployees()} />))}
-              </tbody>
-            </table>
+            <div>
+              <button className="btn btn-primary" type="button" onClick={() => (window.location = '/employees/add')}>Add</button>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th className={this.getColumnClasses('lastName')} onClick={() => this.toggleSortedColumn('lastName')}>Last Name</th>
+                    <th className={this.getColumnClasses('firstName')} onClick={() => this.toggleSortedColumn('firstName')}>First Name</th>
+                    <th className={this.getColumnClasses('title')} onClick={() => this.toggleSortedColumn('title')}>Title</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {this.getSortedEmployees().map(e => (<EmployeeRow key={e.id} employee={e} loadEmployees={() => this.loadEmployees()} />))}
+                </tbody>
+              </table>
+            </div>
           )
         }
       </div>
