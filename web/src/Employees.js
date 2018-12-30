@@ -9,7 +9,7 @@ class EmployeeRow extends Component {
   };
 
   constructor(props) {
-    super();
+    super(props);
     this.state.employee = props.employee;
     this.state.loadEmployees = props.loadEmployees;
   }
@@ -38,6 +38,9 @@ class EmployeeRow extends Component {
         <td>{this.state.employee.lastName}</td>
         <td>{this.state.employee.firstName}</td>
         <td>{this.state.employee.title}</td>
+        <td>
+          <button className="btn btn-link" onClick={() => window.location = '/employees/edit/' + this.state.employee.id}>Edit</button>
+        </td>
         <td>
           <button className="btn btn-link" onClick={() => this.confirmDelete()}>Delete</button>
           {this.state.isBusy && (<Common.Spinner inline={true} />)}
@@ -145,6 +148,7 @@ class Employees extends Component {
                     <th className={this.getColumnClasses('lastName')} onClick={() => this.toggleSortedColumn('lastName')}>Last Name</th>
                     <th className={this.getColumnClasses('firstName')} onClick={() => this.toggleSortedColumn('firstName')}>First Name</th>
                     <th className={this.getColumnClasses('title')} onClick={() => this.toggleSortedColumn('title')}>Title</th>
+                    <th></th>
                     <th></th>
                   </tr>
                 </thead>

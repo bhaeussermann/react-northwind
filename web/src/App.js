@@ -9,8 +9,10 @@ class App extends Component {
     return (
     <BrowserRouter>
       <Switch>
-        <Route path={['/', '/employees']} exact={true} component={Employees} />
+        <Route exact path="/" component={Employees} />
+        <Route exact path="/employees" component={Employees} />
         <Route path="/employees/add" component={EditEmployee} />
+        <Route path="/employees/edit/:id" component={EditEmployee} />
         <Route path="/" render={props => (<h5>Path not found: {props.location.pathname}</h5>)} />
       </Switch>
     </BrowserRouter>
