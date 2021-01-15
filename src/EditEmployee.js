@@ -72,7 +72,7 @@ class EditEmployee extends Component {
       firstName: '',
       lastName: '',
       title: '',
-      birthDate: ''
+      birthDate: null
     }
   };
 
@@ -85,7 +85,7 @@ class EditEmployee extends Component {
     if (this.employeeId) {
       this.setState({ isLoading: true, errorMessage: null });
       try {
-        const employee = await Common.parseResponseAsJson(fetch('/northwind/employees/' + this.employeeId));
+        const employee = await Common.parseResponseAsJson(fetch('/employees/' + this.employeeId));
         this.setState({ employee, didLoad: true });
       }
       catch (error) {
@@ -107,13 +107,15 @@ class EditEmployee extends Component {
 
     try {
       var saveCall = this.employeeId
-        ? fetch('/northwind/employees/' + this.employeeId, {
+        ? fetch('/employees/' + this.employeeId, {
             method: 'put',
-            body: JSON.stringify(this.state.employee)
+            body: JSON.stringify(this.state.employee),
+            headers: { 'Content-Type': 'application/json' }
           })
-        : fetch('/northwind/employees', { 
+        : fetch('/employees', { 
             method: 'post',
-            body: JSON.stringify(this.state.employee)
+            body: JSON.stringify(this.state.employee),
+            headers: { 'Content-Type': 'application/json' }
           });
 
       await Common.resolveResponse(saveCall);

@@ -18,7 +18,7 @@ class EmployeeRow extends Component {
     if (window.confirm(`Delete ${this.state.employee.firstName} ${this.state.employee.lastName}?`)) {
       try {
         this.setState({ isBusy: true, errorMessage: null });
-        await Common.resolveResponse(fetch('/northwind/employees/' + this.state.employee.id, { method: 'delete' }));
+        await Common.resolveResponse(fetch('/employees/' + this.state.employee.id, { method: 'delete' }));
       }
       catch (error) {
         this.setState({ errorMessage: 'Error deleting employee: ' + error.message });
@@ -78,7 +78,7 @@ class Employees extends Component {
       const employees = 
         await Common.timeout(
           Common.parseResponseAsJson(
-            fetch('/northwind/employees', { signal: controller.signal })
+            fetch('/employees', { signal: controller.signal })
           ), 5000);
       this.setState({ isBusy: false, employees, filteredEmployees: employees });
     }
